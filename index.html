@@ -553,17 +553,18 @@
     const doc = new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
     addFont(doc);
     const W=210, M=20, CW=W-M*2;
+    drawHeader(doc, W, M);
     const rid = id.slice(-6).toUpperCase();
 
     doc.setFontSize(16); doc.setFont("Lato","bold"); doc.setTextColor(26,24,20);
-    doc.text("Záznam o závade v meste", W/2, 18, {align:"center"});
+    doc.text("Záznam o závade v meste", W/2, 39, {align:"center"});
     doc.setFontSize(9); doc.setFont("Lato","normal"); doc.setTextColor(120,116,106);
-    doc.text("ID: "+rid, M, 27);
-    doc.text(new Date().toLocaleDateString("sk-SK"), W-M, 27, {align:"right"});
+    doc.text("ID: "+rid, M, 48);
+    doc.text(new Date().toLocaleDateString("sk-SK"), W-M, 48, {align:"right"});
     doc.setDrawColor(200,200,200); doc.setLineWidth(0.3);
-    doc.line(M, 31, W-M, 31);
+    doc.line(M, 52, W-M, 52);
 
-    let y = 38;
+    let y = 59;
     function row(label, val) {
       if (!val) return;
       doc.setTextColor(120,116,106); doc.setFontSize(8); doc.setFont("Lato","normal");
@@ -605,10 +606,7 @@
       } catch(e) {}
     }
 
-    doc.setFillColor(240,242,245); doc.rect(0,287,W,10,"F");
-    doc.setTextColor(120,116,106); doc.setFontSize(8);
-    doc.text("Závady v meste · ID: "+rid, M, 293);
-    doc.text("Strana 1 z 1", W-M, 293, {align:"right"});
+    drawFooter(doc, W, M, "Závady v meste", rid);
     doc.save("zavada-"+rid+".pdf");
   };
 
