@@ -294,7 +294,7 @@
   const db  = getDatabase(app);
   const dbRef = ref(db, "zavady");
 
-  let allRecords = {}, openId = null, editId = null, photoData = null;
+  let allRecords = {}, openId = null, editId = null, photoData = null, editPhotoData = null;
 
   function setStatus(on) {
     document.getElementById("status-dot").className = "dot"+(on?" on":"");
@@ -346,6 +346,15 @@
           </div>
           <div class="edit-group"><span class="edit-label">Adresa / miesto</span><input class="edit-field" id="e-address" value="${r.address||''}"/></div>
           <div class="edit-group full"><span class="edit-label">Popis</span><textarea class="edit-field ta" id="e-desc">${r.description||''}</textarea></div>
+          <div class="edit-group full">
+            <span class="edit-label">Fotografia</span>
+            ${r.photoUrl ? `<img id="e-photo-current" src="${r.photoUrl}" style="width:100%;max-height:180px;object-fit:contain;background:var(--surface2);border-radius:8px;margin-bottom:6px;display:block"/>` : ''}
+            <div style="border:1.5px dashed var(--border-strong);border-radius:var(--radius);padding:10px;text-align:center;cursor:pointer;transition:border-color .15s" onclick="document.getElementById('e-photo-input').click()" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border-strong)'">
+              <div style="font-size:13px;color:var(--muted)">${r.photoUrl ? '📷 Zmeniť fotografiu' : '📷 Pridať fotografiu'}</div>
+              <input type="file" id="e-photo-input" accept="image/*" style="display:none" onchange="previewEditPhoto(this)"/>
+            </div>
+            <img id="e-photo-preview" style="width:100%;max-height:180px;object-fit:contain;background:var(--surface2);border-radius:8px;margin-top:6px;display:none"/>
+          </div>
         </div>
         <div class="edit-footer">
           <button class="edit-save" onclick="saveEdit('${r.id}')">Uložiť zmeny</button>
@@ -419,7 +428,7 @@
 
   window.toggleCard = id => { openId = openId===id?null:id; editId = null; render(); };
   window.startEdit  = id => { editId = id; openId = id; render(); };
-  window.cancelEdit = ()  => { editId = null; render(); };
+  window.cancelEdit = ()  => { editId = null; editPhotoData = null; render(); };
 
   window.changeStatus = (id, status) => {
     const data = { status };
@@ -430,10 +439,34 @@
 
   window.saveEdit = id => {
     const g = s => { const el=document.getElementById(s); return el?el.value.trim():""; };
-    update(ref(db,"zavady/"+id), {
+    const data = {
       date:g("e-date"), time:g("e-time"), shift:g("e-shift"),
       address:g("e-address"), description:g("e-desc")
-    }).then(()=>{ editId=null; render(); });
+    };
+    if (editPhotoData) { data.photoUrl = editPhotoData; editPhotoData = null; }
+    update(ref(db,"zavady/"+id), data).then(()=>{ editId=null; render(); });
+  };
+
+  window.previewEditPhoto = function(input) {
+    const file = input.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX=800; let {width:w, height:h} = img;
+        if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+        const canvas=document.createElement("canvas");
+        canvas.width=w; canvas.height=h;
+        canvas.getContext("2d").drawImage(img,0,0,w,h);
+        editPhotoData = canvas.toDataURL("image/jpeg",0.75);
+        const prev = document.getElementById("e-photo-preview");
+        if (prev) { prev.src=editPhotoData; prev.style.display="block"; }
+        const curr = document.getElementById("e-photo-current");
+        if (curr) curr.style.display="none";
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   };
 
   window.deleteRecord = id => {
