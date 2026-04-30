@@ -561,10 +561,7 @@
     doc.setFontSize(9); doc.setFont("Lato","normal"); doc.setTextColor(120,116,106);
     doc.text("ID: "+rid, M, 48);
     doc.text(new Date().toLocaleDateString("sk-SK"), W-M, 48, {align:"right"});
-    doc.setDrawColor(200,200,200); doc.setLineWidth(0.3);
-    doc.line(M, 52, W-M, 52);
-
-    let y = 59;
+    let y = 56;
     function row(label, val) {
       if (!val) return;
       doc.setTextColor(120,116,106); doc.setFontSize(8); doc.setFont("Lato","normal");
@@ -580,8 +577,7 @@
       y += lines*5+8;
     }
     function sep(title) {
-      y+=4; doc.setDrawColor(200,200,200); doc.setLineWidth(0.2);
-      doc.line(M, y, W-M, y); y+=5;
+      y+=4;
       doc.setTextColor(120,116,106); doc.setFontSize(8); doc.setFont("Lato","bold");
       doc.text(title, M, y); y+=6;
     }
@@ -599,8 +595,12 @@
         const remaining = 287 - y - 10;
         if (remaining > 30) {
           sep("Fotografia");
-          const imgH = Math.min(remaining, 80);
-          doc.addImage(imgData, "JPEG", M, y, CW, imgH);
+          const props = doc.getImageProperties(imgData);
+          const maxW = 110, maxH = Math.min(remaining - 6, 90);
+          let imgW = maxW;
+          let imgH = (props.height / props.width) * imgW;
+          if (imgH > maxH) { imgH = maxH; imgW = (props.width / props.height) * imgH; }
+          doc.addImage(imgData, "JPEG", M, y, imgW, imgH);
           y += imgH + 6;
         }
       } catch(e) {}
