@@ -73,7 +73,7 @@
     .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
     .df-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
     .df-val { font-size: 13px; font-weight: 500; color: var(--text); }
-    .record-photo { width: 100%; border-radius: 8px; max-height: 260px; object-fit: cover; display: block; }
+    .record-photo { width: 100%; border-radius: 8px; max-height: 280px; object-fit: contain; background: var(--surface2); display: block; }
     .detail-actions { display: flex; gap: 8px; padding: 10px 14px; background: var(--surface2); border-top: 0.5px solid var(--border); }
     .action-btn { height: 34px; padding: 0 14px; border-radius: var(--radius); border: 0.5px solid var(--border-strong); background: none; font-family: "DM Sans", sans-serif; font-size: 13px; cursor: pointer; transition: background 0.15s; }
     .action-btn.edit { color: var(--accent); border-color: rgba(29,95,168,0.3); flex: 1; }
@@ -114,7 +114,7 @@
     .photo-upload { border: 1.5px dashed var(--border-strong); border-radius: var(--radius); padding: 16px; text-align: center; cursor: pointer; transition: border-color 0.15s; }
     .photo-upload:hover { border-color: var(--accent); }
     .photo-upload input { display: none; }
-    .photo-preview { width: 100%; border-radius: var(--radius); max-height: 200px; object-fit: cover; display: none; margin-top: 8px; }
+    .photo-preview { width: 100%; border-radius: var(--radius); max-height: 220px; object-fit: contain; background: var(--surface2); display: none; margin-top: 8px; }
 
     /* STATS */
     .stat-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin: 1.25rem 0 8px; }
@@ -600,7 +600,8 @@
           let imgW = maxW;
           let imgH = (props.height / props.width) * imgW;
           if (imgH > maxH) { imgH = maxH; imgW = (props.width / props.height) * imgH; }
-          doc.addImage(imgData, "JPEG", M, y, imgW, imgH);
+          const imgX = (W - imgW) / 2;
+          doc.addImage(imgData, "JPEG", imgX, y, imgW, imgH);
           y += imgH + 6;
         }
       } catch(e) {}
