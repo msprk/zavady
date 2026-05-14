@@ -288,7 +288,7 @@
   // ── AUTH GUARD ──
   const auth = getAuth(app);
   onAuthStateChanged(auth, user => {
-    if (!user) window.location.href = "https://msprk.github.io/";
+    if (!user) window.location.href = "/";
   });
   // ────────────────
   const db  = getDatabase(app);
@@ -398,7 +398,7 @@
             <div class="rec-sub">${r.date||""} ${r.time||""} · Hliadka ${r.shift||"—"}</div>
             <div class="rec-id">ID: ${rid}</div>
           </div>
-          <span class="status-badge status-${r.status||'zistena'}">${{zistena:'Zistená',nahlasena:'Nahlásená',odstranena:'Odstránená'}[r.status||'zistena']}</span>
+          <span class="status-badge status-${r.status||'zistena'}">${{zistena:'Zistená',odstranena:'Odstránená'}[r.status||'zistena']||'Zistená'}</span>
           <button class="dl-btn" onclick="event.stopPropagation();exportPDF('${r.id}')" title="Stiahnuť PDF">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
@@ -444,7 +444,9 @@
       address:g("e-address"), description:g("e-desc")
     };
     if (editPhotoData) { data.photoUrl = editPhotoData; editPhotoData = null; }
-    update(ref(db,"zavady/"+id), data).then(()=>{ editId=null; render(); });
+    update(ref(db,"zavady/"+id), data)
+      .then(()=>{ editId=null; render(); })
+      .catch(err=>{ alert("Chyba ukladania: "+err.message); });
   };
 
   window.previewEditPhoto = function(input) {
@@ -480,9 +482,8 @@
     const shift = document.getElementById("f-shift").value;
     const address = document.getElementById("f-address").value.trim();
     const desc = document.getElementById("f-desc").value.trim();
-    const time2 = document.getElementById("f-time").value;
     if (!date)    { alert("Vyplňte dátum závady."); return; }
-    if (!time2)   { alert("Vyplňte čas závady."); return; }
+    if (!time)    { alert("Vyplňte čas závady."); return; }
     if (!shift)   { alert("Vyplňte hliadku."); return; }
     if (!address) { alert("Vyplňte miesto závady."); return; }
     if (!desc)    { alert("Vyplňte popis závady."); return; }
@@ -501,7 +502,7 @@
       document.getElementById("f-date").value=n.toISOString().split("T")[0];
       document.getElementById("f-time").value=n.toTimeString().slice(0,5);
       switchTab("zavady");
-    });
+    }).catch(err=>{ btn.disabled=false; btn.textContent="Uložiť závadu"; alert("Chyba ukladania: "+err.message); });
   };
 
   // ── PHOTO ──
